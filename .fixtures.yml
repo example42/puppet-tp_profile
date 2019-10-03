@@ -2,5 +2,8 @@
 # See https://github.com/puppetlabs/puppetlabs_spec_helper#using-fixtures for details
 ---
 fixtures:
+  reposittories:
+    "tp": "https://github.com/example42/puppet-tp"
+    "tinydata": "https://github.com/example42/tinydata"
   forge_modules:
 #     stdlib: "puppetlabs/stdlib"
