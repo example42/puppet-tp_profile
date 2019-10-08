@@ -1,87 +1,48 @@
 # tp_profile
 
-Welcome to your new module. A short overview of the generated parts can be found in the PDK documentation at https://puppet.com/pdk/latest/pdk_generating_modules.html .
+This module provides classes to install different applications via Tiny Puppet (tp).
 
-The README template below provides a starting point with details about what information to include in your README.
+[![Build Status](https://travis-ci.org/example42/puppet-tp_profile.svg?branch=master)](https://travis-ci.org/example42/puppet-tp_profile)
 
 #### Table of Contents
 
 1. [Description](#description)
 2. [Setup - The basics of getting started with tp_profile](#setup)
     * [What tp_profile affects](#what-tp_profile-affects)
-    * [Setup requirements](#setup-requirements)
     * [Beginning with tp_profile](#beginning-with-tp_profile)
 3. [Usage - Configuration options and additional functionality](#usage)
 4. [Limitations - OS compatibility, etc.](#limitations)
-5. [Development - Guide for contributing to the module](#development)
 
 ## Description
 
-Briefly tell users why they might want to use your module. Explain what your module does and what kind of problems users can solve with it.
-
-This should be a fairly short description helps the user decide if your module is what they want.
+This module provides a set of standard classes to handle different applications, on different Operating Systems, using Tiny Puppet defines.
 
 ## Setup
 
-### What tp_profile affects **OPTIONAL**
+### What tp_profile affects 
 
-If it's obvious what your module touches, you can skip this section. For example, folks can probably figure out that your mysql_instance module affects their MySQL instances.
+When you include a tp profile the relevant application package and service are managed.
 
-If there's more that they should know about, though, this is the place to mention:
-
-* Files, packages, services, or operations that the module will alter, impact, or execute.
-* Dependencies that your module automatically installs.
-* Warnings or other important notices.
-
-### Setup Requirements **OPTIONAL**
-
-If your module requires anything extra before setting up (pluginsync enabled, another module, etc.), mention it here.
-
-If your most recent release breaks compatibility or requires particular steps for upgrading, you might want to include an additional "Upgrading" section here.
+Via additional class parameters, which are the same for every tp profile class, you can manage:
+- If to use the upstream application repos or the underlying OS ones to install the package
+- The application's configuration files, in the shape, format and way you want
 
 ### Beginning with tp_profile
 
-The very basic steps needed for a user to get the module up and running. This can include setup steps, if necessary, or it can be an example of the most basic use of the module.
+Just include and tp profile to install the relevant application. Handle via Hiera all your customisations
 
 ## Usage
 
-Include usage examples for common use cases in the **Usage** section. Show your users how to use your module to solve problems, and be sure to include code examples. Include three to five examples of the most important or common tasks a user can accomplish with your module. Show users how to accomplish more complex tasks that involve different types, classes, and functions working in tandem.
+To install mongodb, for example, just:
 
-## Reference
+    include tp_profile::mongodb
 
-This section is deprecated. Instead, add reference information to your code as Puppet Strings comments, and then use Strings to generate a REFERENCE.md in your module. For details on how to add code comments and generate documentation with Strings, see the Puppet Strings [documentation](https://puppet.com/docs/puppet/latest/puppet_strings.html) and [style guide](https://puppet.com/docs/puppet/latest/puppet_strings_style.html)
+Then you can configure the class parameters via Hiera (all the classes have the same parameters, so what's written here for mongodb applies to all the supported application):
 
-If you aren't ready to use Strings yet, manually create a REFERENCE.md in the root of your module directory and list out each of your module's classes, defined types, facts, functions, Puppet tasks, task plans, and resource types and providers, along with the parameters for each.
+To use mongodb upstream repos, rather than the default one of the underlying OS (note, this option works when it's present the relevant tinydata to manage upstream repos for a given app):
 
-For each element (class, defined type, function, and so on), list:
-
-  * The data type, if applicable.
-  * A description of what the element does.
-  * Valid values, if the data type doesn't make it obvious.
-  * Default value, if any.
-
-For example:
-
-```
-### `pet::cat`
-
-#### Parameters
-
-##### `meow`
-
-Enables vocalization in your cat. Valid options: 'string'.
-
-Default: 'medium-loud'.
-```
+    tp_profile::mongodb::upstream_repo: true
 
 ## Limitations
 
-In the Limitations section, list any incompatibilities, known issues, or other warnings.
-
 ## Development
-
-In the Development section, tell other users the ground rules for contributing to your project and how they should submit their work.
-
-## Release Notes/Contributors/Etc. **Optional**
-
-If you aren't using changelog, put your release notes here (though you should consider using changelog). You can also add any additional sections you feel are necessary or important to include here. Please use the `## ` header.
