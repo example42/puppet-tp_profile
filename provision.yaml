@@ -1,0 +1,20 @@
+# Images to use for Litmus
+---
+default:
+  provisioner: docker
+  images: ['waffleimage/centos7']
+waffle_debian:
+  provisioner: docker
+  images: ['waffleimage/debian8', 'waffleimage/debian9']
+waffle_ubuntu:
+  provisioner: docker
+  images: ['waffleimage/ubuntu14.04', 'waffleimage/ubuntu16.04', 'waffleimage/ubuntu18.04']
+waffle_centos6:
+  provisioner: docker
+  images: ['waffleimage/centos6']
+waffle_scientificlinux6:
+  provisioner: docker
+  images: ['waffleimage/scientificlinux6']
+waffle_el7:
+  provisioner: docker
+  images: ['waffleimage/centos7', 'waffleimage/oraclelinux7', 'waffleimage/scientificlinux7']

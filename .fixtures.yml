@@ -7,4 +7,5 @@ fixtures:
      puppet_agent: 'git://github.com/puppetlabs/puppetlabs-puppet_agent.git'
      provision: 'git://github.com/puppetlabs/provision.git'   
      tp: "https://github.com/example42/puppet-tp"
+     tinydata: "https://github.com/example42/tinydata"
   forge_modules:
