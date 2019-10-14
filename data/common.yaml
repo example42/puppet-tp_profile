@@ -1,12 +1,9 @@
 ---
 # Deep merge lookups for the following keys:
 lookup_options:
-# Regular expressions to enable deep merge on all params ending with _hash and _classes
+# Regular expressions to enable deep merge on all params ending with _hash
   "^tp_profile::(.*)::(.*)_hash$":
     merge:
       strategy: deep
       knockout_prefix: "--"
-  "^tp_profile::(.*)_hash$":
-    merge:
-      strategy: deep
-      knockout_prefix: "--"
+

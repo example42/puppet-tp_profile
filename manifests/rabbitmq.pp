@@ -2,6 +2,14 @@
 #
 # @summary This tp profile manages rabbitmq with Tiny Puppet (tp)
 #
+# When you include this class the relevant tp::install define is declared
+# which is expected to install rabbitmq package and manage its service.
+# Via the resources_hash parameter is possible to pass hashes of tp::conf and
+# tp::dir defines which can manage rabbitmq configuration files and
+# whole dirs.
+# All the parameters ending with the _hash suffix expect and Hash and are looked
+# up on Hiera via the deep merge lookup option.
+#
 # @example Just include it to install rabbitmq
 #   include tp_profile::rabbitmq
 #
@@ -9,18 +17,22 @@
 #   psick::profiles::linux_classes:
 #     rabbitmq: tp_profile::rabbitmq
 #
-# @example To upstream repos instead of OS defaults (if tinydata available) as packages source:
+# @example To use upstream repos instead of OS defaults (if tinydata available) as packages source:
 #   tp_profile::rabbitmq::upstream_repo: true
 #
 # @example Manage extra configs via hiera (yaml) with templates based on custom options
 #   tp_profile::rabbitmq::ensure: present
-#   tp_profile::rabbitmq::resources_hash:
+#   tp_profile::rabbitmq::resources:
 #     tp::conf:
 #       rabbitmq:
 #         epp: profile/rabbitmq/rabbitmq.conf.epp
 #       rabbitmq::dot.conf:
 #         epp: profile/rabbitmq/dot.conf.epp
 #         base_dir: conf
+#     exec:
+#       rabbitmq::setup:
+#         command: '/usr/local/bin/rabbitmq_setup'
+#         creates: '/opt/rabbitmq'
 #   tp_profile::rabbitmq::options_hash:
 #     key: value
 #
@@ -29,45 +41,70 @@
 #   automatically added.
 #   tp_profile::rabbitmq::auto_conf: true
 #
-# @param manage If to actually manage any resource in this profile or not
+# @param manage If to actually manage any resource in this profile or not.
 # @param ensure If to install or remove rabbitmq. Valid values are present, absent, latest
 #   or any version string, matching the expected rabbitmq package version.
 # @param upstream_repo If to use rabbitmq upstream repos as source for packages
-#   or rely on default packages from the underlying OS
-# @param resources_hash An hash of tp::conf and tp::dir resources for rabbitmq.
-#   tp::conf params: https://github.com/example42/puppet-tp/blob/master/manifests/conf.pp
-#   tp::dir params: https://github.com/example42/puppet-tp/blob/master/manifests/dir.pp
-# @param resources_auto_conf_hash The default resources hash if auto_conf is set.
-#   The final resources managed are the ones specified here and in $resources_hash.
-#   Check tp_profile::rabbitmq::resources_auto_conf_hash in data/$auto_conf/*.yaml for
-#   the auto_conf defaults.
+#   or rely on default packages from the underlying OS.
+#
 # @param install_hash An hash of valid params to pass to tp::install defines. Useful to
 #   manage specific params that are not automatically defined.
 # @param options_hash An open hash of options to use in the templates referenced
 #   in the tp::conf entries of the $resources_hash.
-# @param options_auto_conf_hash The default options hash if auto_conf is set.
-#   Check tp_profile::rabbitmq::options_auto_conf_hash in data/$auto_conf/*.yaml for
-#   the auto_conf defaults.
 # @param settings_hash An hash of tp settings to override default rabbitmq file
-#   paths, package names, repo info and whatever can match Tp::Settings data type:
-#   https://github.com/example42/puppet-tp/blob/master/types/settings.pp
+#   paths, package names, repo info and whatever tinydata that matches Tp::Settings data type:
+#   https://github.com/example42/puppet-tp/blob/master/types/settings.pp.
+#
+# @param auto_conf If to enable automatic configuration of rabbitmq based on the
+#   resources_auto_conf_hash and options_auto_conf_hash parameters, if present in
+#   data/common/rabbitmq.yaml. You can both override them in your Hiera files
+#   and merge them with your resources_hash and options_hash.
+# @param resources_auto_conf_hash The default resources hash if auto_conf is true.
+#   The final resources managed are the ones specified here and in $resources.
+#   Check tp_profile::rabbitmq::resources_auto_conf_hash in
+#   data/common/rabbitmq.yaml for the auto_conf defaults.
+# @param options_auto_conf_hash The default options hash if auto_conf is set.
+#   Check tp_profile::rabbitmq::options_auto_conf_hash in
+#   data/common/rabbitmq.yaml for the auto_conf defaults.
+#
+# @param resources An hash of any resource, like tp::conf, tp::dir, exec or whatever
+#   to declare for rabbitmq confiuration. Can also come from a third-party
+#   component modules with dedicated rabbitmq resources.
+#   tp::conf params: https://github.com/example42/puppet-tp/blob/master/manifests/conf.pp
+#   tp::dir params: https://github.com/example42/puppet-tp/blob/master/manifests/dir.pp
+#   any other Puppet resource type, with relevant params can be actually used
+#   The Hiera lookup method used for this parameter is defined with the $resource_lookup_method
+#   parameter.
+# @param resource_lookup_method What lookup method to use for tp_profile::rabbitmq::resources
+# @param resources_defaults An Hash of resources with their default params, to be merged with
+#   $resources.
+#
 # @param auto_prereq If to automatically install eventual dependencies for rabbitmq.
 #   Set to false if you have problems with duplicated resources, being sure that you
 #   manage the prerequistes to install rabbitmq (other packages, repos or tp installs).
 # @param no_noop Set noop metaparameter to false to all the resources of this class. If set,
 #   the trlinkin/noop module is required.
+#
 class tp_profile::rabbitmq (
-  Tp_Profile::Ensure $ensure                = 'present',
-  Boolean         $manage                   = true,
-  Hash            $resources_hash           = {},
-  Hash            $resources_auto_conf_hash = {},
-  Hash            $install_hash             = {},
-  Hash            $options_hash             = {},
-  Hash            $options_auto_conf_hash   = {},
-  Hash            $settings_hash            = {},
-  Optional[Boolean] $upstream_repo          = undef,
-  Boolean         $auto_prereq              = true,
-  Boolean         $no_noop                  = false,
+  Tp_Profile::Ensure $ensure                   = 'present',
+  Boolean            $manage                   = true,
+  Optional[Boolean]  $upstream_repo            = undef,
+
+  Hash               $install_hash             = {},
+  Hash               $options_hash             = {},
+  Hash               $settings_hash            = {},
+
+# This param is looked up in code according to $resources_lookup_method
+#  Hash               $resources                = {},
+  Hash               $resources_defaults       = {},
+  Hash               $resources_lookup_method  = 'deep',
+
+  Boolean            $auto_conf                = false,
+  Hash               $resources_auto_conf_hash = {},
+  Hash               $options_auto_conf_hash   = {},
+
+  Boolean            $auto_prereq              = true,
+  Boolean            $no_noop                  = false,
 ) {
 
   if $manage {
@@ -75,7 +112,11 @@ class tp_profile::rabbitmq (
       info('Forced no-noop mode in tp_profile::rabbitmq')
       noop(false)
     }
-    $options_all = $options_auto_conf_hash + $options_hash
+    $options_all = $auto_conf ? {
+      true  => $options_auto_conf_hash + $options_hash,
+      false => $options_hash,
+    }
+    
     $install_defaults = {
       ensure        => $ensure,
       options_hash  => $options_all,
@@ -88,34 +129,43 @@ class tp_profile::rabbitmq (
       * => $install_defaults + $install_hash,
     }
 
-    # tp::conf iteration based on $resources_hash['tp::conf']
     $file_ensure = $ensure ? {
       'absent' => 'absent',
       default  => 'present',
     }
-    $conf_defaults = {
-      ensure        => $file_ensure,
-      options_hash  => $options_all,
-      settings_hash => $settings_hash,
-    }
-    $tp_confs = pick($resources_auto_conf_hash['tp::conf'], {}) + pick($resources_hash['tp::conf'], {})
-    # All the tp::conf defines declared here
-    $tp_confs.each | $k,$v | {
-      tp::conf { $k:
-        * => $conf_defaults + $v,
-      }
+    $dir_ensure = $ensure ? {
+      'absent' => 'absent',
+      default  => 'directory',
     }
 
-    # tp::dir iteration on $resources_hash['tp::dir']
-    $dir_defaults = {
-      ensure             => $file_ensure,
-      settings_hash      => $settings_hash,
-    }
-    # All the tp::dir defines declared here
-    $tp_dirs = pick($resources_auto_conf_hash['tp::dir'], {}) + pick($resources_hash['tp::dir'], {})
-    $tp_dirs.each | $k,$v | {
-      tp::dir { $k:
-        * => $dir_defaults + $v,
+    # Declaration of tp_profile::rabbitmq::resources
+    $resources=lookup('tp_profile::rabbitmq::resources, Hash, $resources_lookup_method, {})
+    $resources.each |String $resource_type, Hash $content| {
+      $resources_all = $auto_conf ? {
+        true  => pick($resources_auto_conf_hash[$resource_type], {}) + pick($resources[$resource_type], {}),
+        false => pick($resources[$resource_type], {}),
+      }
+      $resources_all.each |String $resource_name, Hash $resource_params| {
+        $resources_params_default = $resource_type ? {
+          'tp::conf' = {
+            ensure        => $file_ensure,
+            options_hash  => $options_all,
+            settings_hash => $settings_hash,
+          },
+          'tp::dir = {
+            ensure        => $dir_ensure,
+            settings_hash => $settings_hash,
+          },
+          'exec' = {
+            path = $::path,
+          },
+          'file' = {
+            ensure        => $file_ensure,
+          },
+          default = {},
+        }
+        $resource_params_all = deep_merge($resources_defaults[$resource_type], $resources_params_default, $resource_params)
+        ensure_resource($resource_type,$resource_name,$resource_params_all)
       }
     }
   }

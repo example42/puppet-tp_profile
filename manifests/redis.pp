@@ -2,6 +2,14 @@
 #
 # @summary This tp profile manages redis with Tiny Puppet (tp)
 #
+# When you include this class the relevant tp::install define is declared
+# which is expected to install redis package and manage its service.
+# Via the resources_hash parameter is possible to pass hashes of tp::conf and
+# tp::dir defines which can manage redis configuration files and
+# whole dirs.
+# All the parameters ending with the _hash suffix expect and Hash and are looked
+# up on Hiera via the deep merge lookup option.
+#
 # @example Just include it to install redis
 #   include tp_profile::redis
 #
@@ -9,18 +17,22 @@
 #   psick::profiles::linux_classes:
 #     redis: tp_profile::redis
 #
-# @example To upstream repos instead of OS defaults (if tinydata available) as packages source:
+# @example To use upstream repos instead of OS defaults (if tinydata available) as packages source:
 #   tp_profile::redis::upstream_repo: true
 #
 # @example Manage extra configs via hiera (yaml) with templates based on custom options
 #   tp_profile::redis::ensure: present
-#   tp_profile::redis::resources_hash:
+#   tp_profile::redis::resources:
 #     tp::conf:
 #       redis:
 #         epp: profile/redis/redis.conf.epp
 #       redis::dot.conf:
 #         epp: profile/redis/dot.conf.epp
 #         base_dir: conf
+#     exec:
+#       redis::setup:
+#         command: '/usr/local/bin/redis_setup'
+#         creates: '/opt/redis'
 #   tp_profile::redis::options_hash:
 #     key: value
 #
@@ -29,45 +41,70 @@
 #   automatically added.
 #   tp_profile::redis::auto_conf: true
 #
-# @param manage If to actually manage any resource in this profile or not
+# @param manage If to actually manage any resource in this profile or not.
 # @param ensure If to install or remove redis. Valid values are present, absent, latest
 #   or any version string, matching the expected redis package version.
 # @param upstream_repo If to use redis upstream repos as source for packages
-#   or rely on default packages from the underlying OS
-# @param resources_hash An hash of tp::conf and tp::dir resources for redis.
-#   tp::conf params: https://github.com/example42/puppet-tp/blob/master/manifests/conf.pp
-#   tp::dir params: https://github.com/example42/puppet-tp/blob/master/manifests/dir.pp
-# @param resources_auto_conf_hash The default resources hash if auto_conf is set.
-#   The final resources managed are the ones specified here and in $resources_hash.
-#   Check tp_profile::redis::resources_auto_conf_hash in data/$auto_conf/*.yaml for
-#   the auto_conf defaults.
+#   or rely on default packages from the underlying OS.
+#
 # @param install_hash An hash of valid params to pass to tp::install defines. Useful to
 #   manage specific params that are not automatically defined.
 # @param options_hash An open hash of options to use in the templates referenced
 #   in the tp::conf entries of the $resources_hash.
-# @param options_auto_conf_hash The default options hash if auto_conf is set.
-#   Check tp_profile::redis::options_auto_conf_hash in data/$auto_conf/*.yaml for
-#   the auto_conf defaults.
 # @param settings_hash An hash of tp settings to override default redis file
-#   paths, package names, repo info and whatever can match Tp::Settings data type:
-#   https://github.com/example42/puppet-tp/blob/master/types/settings.pp
+#   paths, package names, repo info and whatever tinydata that matches Tp::Settings data type:
+#   https://github.com/example42/puppet-tp/blob/master/types/settings.pp.
+#
+# @param auto_conf If to enable automatic configuration of redis based on the
+#   resources_auto_conf_hash and options_auto_conf_hash parameters, if present in
+#   data/common/redis.yaml. You can both override them in your Hiera files
+#   and merge them with your resources_hash and options_hash.
+# @param resources_auto_conf_hash The default resources hash if auto_conf is true.
+#   The final resources managed are the ones specified here and in $resources.
+#   Check tp_profile::redis::resources_auto_conf_hash in
+#   data/common/redis.yaml for the auto_conf defaults.
+# @param options_auto_conf_hash The default options hash if auto_conf is set.
+#   Check tp_profile::redis::options_auto_conf_hash in
+#   data/common/redis.yaml for the auto_conf defaults.
+#
+# @param resources An hash of any resource, like tp::conf, tp::dir, exec or whatever
+#   to declare for redis confiuration. Can also come from a third-party
+#   component modules with dedicated redis resources.
+#   tp::conf params: https://github.com/example42/puppet-tp/blob/master/manifests/conf.pp
+#   tp::dir params: https://github.com/example42/puppet-tp/blob/master/manifests/dir.pp
+#   any other Puppet resource type, with relevant params can be actually used
+#   The Hiera lookup method used for this parameter is defined with the $resource_lookup_method
+#   parameter.
+# @param resource_lookup_method What lookup method to use for tp_profile::redis::resources
+# @param resources_defaults An Hash of resources with their default params, to be merged with
+#   $resources.
+#
 # @param auto_prereq If to automatically install eventual dependencies for redis.
 #   Set to false if you have problems with duplicated resources, being sure that you
 #   manage the prerequistes to install redis (other packages, repos or tp installs).
 # @param no_noop Set noop metaparameter to false to all the resources of this class. If set,
 #   the trlinkin/noop module is required.
+#
 class tp_profile::redis (
-  Tp_Profile::Ensure $ensure                = 'present',
-  Boolean         $manage                   = true,
-  Hash            $resources_hash           = {},
-  Hash            $resources_auto_conf_hash = {},
-  Hash            $install_hash             = {},
-  Hash            $options_hash             = {},
-  Hash            $options_auto_conf_hash   = {},
-  Hash            $settings_hash            = {},
-  Optional[Boolean] $upstream_repo          = undef,
-  Boolean         $auto_prereq              = true,
-  Boolean         $no_noop                  = false,
+  Tp_Profile::Ensure $ensure                   = 'present',
+  Boolean            $manage                   = true,
+  Optional[Boolean]  $upstream_repo            = undef,
+
+  Hash               $install_hash             = {},
+  Hash               $options_hash             = {},
+  Hash               $settings_hash            = {},
+
+# This param is looked up in code according to $resources_lookup_method
+#  Hash               $resources                = {},
+  Hash               $resources_defaults       = {},
+  Hash               $resources_lookup_method  = 'deep',
+
+  Boolean            $auto_conf                = false,
+  Hash               $resources_auto_conf_hash = {},
+  Hash               $options_auto_conf_hash   = {},
+
+  Boolean            $auto_prereq              = true,
+  Boolean            $no_noop                  = false,
 ) {
 
   if $manage {
@@ -75,7 +112,11 @@ class tp_profile::redis (
       info('Forced no-noop mode in tp_profile::redis')
       noop(false)
     }
-    $options_all = $options_auto_conf_hash + $options_hash
+    $options_all = $auto_conf ? {
+      true  => $options_auto_conf_hash + $options_hash,
+      false => $options_hash,
+    }
+    
     $install_defaults = {
       ensure        => $ensure,
       options_hash  => $options_all,
@@ -88,34 +129,43 @@ class tp_profile::redis (
       * => $install_defaults + $install_hash,
     }
 
-    # tp::conf iteration based on $resources_hash['tp::conf']
     $file_ensure = $ensure ? {
       'absent' => 'absent',
       default  => 'present',
     }
-    $conf_defaults = {
-      ensure        => $file_ensure,
-      options_hash  => $options_all,
-      settings_hash => $settings_hash,
-    }
-    $tp_confs = pick($resources_auto_conf_hash['tp::conf'], {}) + pick($resources_hash['tp::conf'], {})
-    # All the tp::conf defines declared here
-    $tp_confs.each | $k,$v | {
-      tp::conf { $k:
-        * => $conf_defaults + $v,
-      }
+    $dir_ensure = $ensure ? {
+      'absent' => 'absent',
+      default  => 'directory',
     }
 
-    # tp::dir iteration on $resources_hash['tp::dir']
-    $dir_defaults = {
-      ensure             => $file_ensure,
-      settings_hash      => $settings_hash,
-    }
-    # All the tp::dir defines declared here
-    $tp_dirs = pick($resources_auto_conf_hash['tp::dir'], {}) + pick($resources_hash['tp::dir'], {})
-    $tp_dirs.each | $k,$v | {
-      tp::dir { $k:
-        * => $dir_defaults + $v,
+    # Declaration of tp_profile::redis::resources
+    $resources=lookup('tp_profile::redis::resources, Hash, $resources_lookup_method, {})
+    $resources.each |String $resource_type, Hash $content| {
+      $resources_all = $auto_conf ? {
+        true  => pick($resources_auto_conf_hash[$resource_type], {}) + pick($resources[$resource_type], {}),
+        false => pick($resources[$resource_type], {}),
+      }
+      $resources_all.each |String $resource_name, Hash $resource_params| {
+        $resources_params_default = $resource_type ? {
+          'tp::conf' = {
+            ensure        => $file_ensure,
+            options_hash  => $options_all,
+            settings_hash => $settings_hash,
+          },
+          'tp::dir = {
+            ensure        => $dir_ensure,
+            settings_hash => $settings_hash,
+          },
+          'exec' = {
+            path = $::path,
+          },
+          'file' = {
+            ensure        => $file_ensure,
+          },
+          default = {},
+        }
+        $resource_params_all = deep_merge($resources_defaults[$resource_type], $resources_params_default, $resource_params)
+        ensure_resource($resource_type,$resource_name,$resource_params_all)
       }
     }
   }

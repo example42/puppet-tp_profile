@@ -1,6 +1,6 @@
 {
   "name": "example42-tp_profile",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Alessandro Franceschi",
   "summary": "",
   "license": "Apache-2.0",
@@ -9,6 +9,30 @@
 
   ],
   "operatingsystem_support": [
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "6"
+      ]
+    },
+    {
+      "operatingsystem": "OracleLinux",
+      "operatingsystemrelease": [
+        "6"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "6"
+      ]
+    },
+    {
+      "operatingsystem": "Scientific",
+      "operatingsystemrelease": [
+        "6"
+      ]
+    },
     {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
@@ -24,7 +48,7 @@
     {
       "operatingsystem": "RedHat",
       "operatingsystemrelease": [
-        "8"
+        "7"
       ]
     },
     {
@@ -34,9 +58,51 @@
       ]
     },
     {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "OracleLinux",
+      "operatingsystemrelease": [
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "Scientific",
+      "operatingsystemrelease": [
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8"
+      ]
+    },
+    {
       "operatingsystem": "Debian",
       "operatingsystemrelease": [
         "9"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "14.04"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "16.04"
       ]
     },
     {
@@ -65,7 +131,11 @@
     },
     {
       "name": "example42/tinydata",
-      "version_requirement": ">= 0.0.1 < 5.0.0"
+      "version_requirement": ">= 0.3.0 < 5.0.0"
+    },
+    {
+      "name": "example42/tp",
+      "version_requirement": ">= 2.4.0 < 5.0.0"
     }
   ],  
   "pdk-version": "1.13.0",
