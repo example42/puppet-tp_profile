@@ -102,7 +102,6 @@ class tp_profile::postgresql (
 #  Hash               $options                 = {},
   Enum['first','deep','hash'] $options_lookup_method = 'deep',
 
-  Hash               $options                  = {},
   Boolean            $auto_conf                = false,
   Hash               $resources_auto_conf_hash = {},
   Hash               $options_auto_conf_hash   = {},
