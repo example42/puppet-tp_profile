@@ -23,7 +23,7 @@ stages:
 matrix:
   fast_finish: true
   include:
-  -
+    -
       bundler_args:
       dist: trusty
       env: PLATFORMS=debian_puppet5

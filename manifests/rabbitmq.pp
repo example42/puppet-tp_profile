@@ -33,7 +33,7 @@
 #       rabbitmq::setup:
 #         command: '/usr/local/bin/rabbitmq_setup'
 #         creates: '/opt/rabbitmq'
-#   tp_profile::rabbitmq::options_hash:
+#   tp_profile::rabbitmq::options:
 #     key: value
 #
 # @example Enable default auto configuration, if configurations are available
@@ -49,7 +49,7 @@
 #
 # @param install_hash An hash of valid params to pass to tp::install defines. Useful to
 #   manage specific params that are not automatically defined.
-# @param options_hash An open hash of options to use in the templates referenced
+# @param options An open hash of options to use in the templates referenced
 #   in the tp::conf entries of the $resources_hash.
 # @param settings_hash An hash of tp settings to override default rabbitmq file
 #   paths, package names, repo info and whatever tinydata that matches Tp::Settings data type:
@@ -58,7 +58,7 @@
 # @param auto_conf If to enable automatic configuration of rabbitmq based on the
 #   resources_auto_conf_hash and options_auto_conf_hash parameters, if present in
 #   data/common/rabbitmq.yaml. You can both override them in your Hiera files
-#   and merge them with your resources_hash and options_hash.
+#   and merge them with your resources and options.
 # @param resources_auto_conf_hash The default resources hash if auto_conf is true.
 #   The final resources managed are the ones specified here and in $resources.
 #   Check tp_profile::rabbitmq::resources_auto_conf_hash in
@@ -91,14 +91,18 @@ class tp_profile::rabbitmq (
   Optional[Boolean]  $upstream_repo            = undef,
 
   Hash               $install_hash             = {},
-  Hash               $options_hash             = {},
   Hash               $settings_hash            = {},
 
 # This param is looked up in code according to $resources_lookup_method
 #  Hash               $resources                = {},
   Hash               $resources_defaults       = {},
-  Hash               $resources_lookup_method  = 'deep',
+  Enum['first','deep','hash'] $resources_lookup_method = 'deep',
 
+# This param is looked up in code according to $options_lookup_method
+#  Hash               $options                 = {},
+  Enum['first','deep','hash'] $options_lookup_method = 'deep',
+
+  Hash               $options                  = {},
   Boolean            $auto_conf                = false,
   Hash               $resources_auto_conf_hash = {},
   Hash               $options_auto_conf_hash   = {},
@@ -107,14 +111,16 @@ class tp_profile::rabbitmq (
   Boolean            $no_noop                  = false,
 ) {
 
+  $options=lookup('tp_profile::rabbitmq::options', Hash, $options_lookup_method, {})
+
   if $manage {
     if $no_noop {
       info('Forced no-noop mode in tp_profile::rabbitmq')
       noop(false)
     }
     $options_all = $auto_conf ? {
-      true  => $options_auto_conf_hash + $options_hash,
-      false => $options_hash,
+      true  => $options_auto_conf_hash + $options,
+      false => $options,
     }
     
     $install_defaults = {
@@ -139,7 +145,7 @@ class tp_profile::rabbitmq (
     }
 
     # Declaration of tp_profile::rabbitmq::resources
-    $resources=lookup('tp_profile::rabbitmq::resources, Hash, $resources_lookup_method, {})
+    $resources=lookup('tp_profile::rabbitmq::resources', Hash, $resources_lookup_method, {})
     $resources.each |String $resource_type, Hash $content| {
       $resources_all = $auto_conf ? {
         true  => pick($resources_auto_conf_hash[$resource_type], {}) + pick($resources[$resource_type], {}),
@@ -147,22 +153,25 @@ class tp_profile::rabbitmq (
       }
       $resources_all.each |String $resource_name, Hash $resource_params| {
         $resources_params_default = $resource_type ? {
-          'tp::conf' = {
+          'tp::conf' => {
             ensure        => $file_ensure,
             options_hash  => $options_all,
             settings_hash => $settings_hash,
           },
-          'tp::dir = {
+          'tp::dir' => {
             ensure        => $dir_ensure,
             settings_hash => $settings_hash,
           },
-          'exec' = {
-            path = $::path,
+          'exec' => {
+            path => $::path,
           },
-          'file' = {
+          'file' => {
             ensure        => $file_ensure,
           },
-          default = {},
+          'package' => {
+            ensure        => $file_ensure,
+          },
+          default => {},
         }
         $resource_params_all = deep_merge($resources_defaults[$resource_type], $resources_params_default, $resource_params)
         ensure_resource($resource_type,$resource_name,$resource_params_all)
