@@ -2,11 +2,24 @@
   "name": "example42-tp_profile",
   "version": "0.1.1",
   "author": "Alessandro Franceschi",
-  "summary": "",
+  "summary": "This module provides profiles to install applications via tp (Tiny Puppet)",
   "license": "Apache-2.0",
-  "source": "",
+  "source": "https://github.com/example42/puppet-tp_profile",
+  "project_page": "https://github.com/example42/puppet-tp_profile",
+  "issues_url": "https://github.com/example42/puppet-tp_profile/issues",
   "dependencies": [
-
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 3.2.0 < 7.0.0"
+    },
+    {
+      "name": "example42/tinydata",
+      "version_requirement": ">= 0.3.0 < 5.0.0"
+    },
+    {
+      "name": "example42/tp",
+      "version_requirement": ">= 2.4.0 < 5.0.0"
+    }
   ],
   "operatingsystem_support": [
     {
@@ -124,20 +137,6 @@
       "version_requirement": ">= 4.10.0 < 7.0.0"
     }
   ],
-  "dependencies": [
-    {
-      "name": "puppetlabs/stdlib",
-      "version_requirement": ">= 3.2.0 < 7.0.0"
-    },
-    {
-      "name": "example42/tinydata",
-      "version_requirement": ">= 0.3.0 < 5.0.0"
-    },
-    {
-      "name": "example42/tp",
-      "version_requirement": ">= 2.4.0 < 5.0.0"
-    }
-  ],  
   "pdk-version": "1.13.0",
   "template-url": "https://github.com/example42/pdk-module-template-tp-profile-minimal-tests#master",
   "template-ref": "heads/master-0-g8170554"
