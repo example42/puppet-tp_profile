@@ -22,5 +22,5 @@ puppetdb https://github.com/alvagante/pdk-module-template-tp-profile-minimal-tes
 puppetserver https://github.com/alvagante/pdk-module-template-tp-profile-minimal-tests
 redis https://github.com/alvagante/pdk-module-template-tp-profile-minimal-tests
 grafana https://github.com/alvagante/pdk-module-template-tp-profile-minimal-tests
-influx https://github.com/alvagante/pdk-module-template-tp-profile-minimal-tests
+influxdb https://github.com/alvagante/pdk-module-template-tp-profile-minimal-tests
 virtualbox https://github.com/alvagante/pdk-module-template-tp-profile-minimal-test
