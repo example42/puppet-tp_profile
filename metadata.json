@@ -1,6 +1,6 @@
 {
   "name": "example42-tp_profile",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Alessandro Franceschi",
   "summary": "This module provides profiles to install applications via tp (Tiny Puppet)",
   "license": "Apache-2.0",
@@ -11,6 +11,10 @@
     {
       "name": "puppetlabs/stdlib",
       "version_requirement": ">= 3.2.0 < 7.0.0"
+    },
+    {
+      "name": "trlinkin/noop",
+      "version_requirement": ">= 1.0.0 < 2.0.0"
     },
     {
       "name": "example42/tinydata",
