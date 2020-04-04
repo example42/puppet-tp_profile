@@ -1,6 +1,6 @@
 {
   "name": "example42-tp_profile",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "author": "Alessandro Franceschi",
   "summary": "This module provides profiles to install applications via tp (Tiny Puppet)",
   "license": "Apache-2.0",
@@ -66,8 +66,18 @@
       "operatingsystem": "Ubuntu",
       "operatingsystemrelease": [
         "14.04",
+        "14.10",
+        "15.04",
+        "15.10",
         "16.04",
-        "18.04"
+        "16.10"
+        "17.04",
+        "17.10",
+        "18.04",
+        "18.10",
+        "19.04",
+        "19.10",
+        "20.04"
       ]
     },
     {

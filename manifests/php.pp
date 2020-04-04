@@ -82,8 +82,13 @@
 # @param auto_prereq If to automatically install eventual dependencies for php.
 #   Set to false if you have problems with duplicated resources, being sure that you
 #   manage the prerequistes to install php (other packages, repos or tp installs).
-# @param no_noop Set noop metaparameter to false to all the resources of this class. If set,
-#   the trlinkin/noop module is required.
+#
+# @param noop_manage If to manage noop mode via the noop() function for the resources of
+#   this class. This must be true for noop_value to have effect.
+# @param noop_value. The parameter passed to the noop() function (from trlinkin-noop module)
+#   When true, noop in enforced on all the class' resources.
+#   When false, no-noop in enforced on all the class' resources and overrides any other noop
+#   setting (also from clients' puppet.conf
 #
 class tp_profile::php (
   Tp_Profile::Ensure $ensure                   = 'present',
@@ -113,9 +118,8 @@ class tp_profile::php (
   $options=lookup('tp_profile::php::options', Hash, $options_lookup_method, {})
 
   if $manage {
-    if $no_noop {
-      info('Forced no-noop mode in tp_profile::php')
-      noop(false)
+    if $noop_manage {
+      noop($noop_value)
     }
     $options_all = $auto_conf ? {
       true  => $options_auto_conf_hash + $options,
