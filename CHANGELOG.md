@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 0.2.1
+- Fixed noop params
+
 ## Release 0.2.0
 - Noop options aligned to psick 0.8.0 format
 - Added upstream_repo param
