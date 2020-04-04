@@ -1,6 +1,6 @@
 {
   "name": "example42-tp_profile",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Alessandro Franceschi",
   "summary": "This module provides profiles to install applications via tp (Tiny Puppet)",
   "license": "Apache-2.0",

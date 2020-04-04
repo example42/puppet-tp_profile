@@ -112,7 +112,9 @@ class tp_profile::openvpn (
   Hash               $options_auto_conf_hash   = {},
 
   Boolean            $auto_prereq              = true,
-  Boolean            $no_noop                  = false,
+
+  Boolean            $noop_manage              = false,
+  Boolean            $noop_value               = false,
 ) {
 
   $options=lookup('tp_profile::openvpn::options', Hash, $options_lookup_method, {})

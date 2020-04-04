@@ -112,7 +112,9 @@ class tp_profile::openssh (
   Hash               $options_auto_conf_hash   = {},
 
   Boolean            $auto_prereq              = true,
-  Boolean            $no_noop                  = false,
+
+  Boolean            $noop_manage              = false,
+  Boolean            $noop_value               = false,
 ) {
 
   $options=lookup('tp_profile::openssh::options', Hash, $options_lookup_method, {})
