@@ -1,5 +1,9 @@
 # tp_profile
 
+## Deprecation notice
+This module has been DEPRECATED. It has been replaced by tp classes inside the new [psick_profile](htpps://github.com/example42/puppet-psick_profile) module.
+
+
 This module provides classes to install different applications via Tiny Puppet (tp).
 
 [![Build Status](https://travis-ci.org/example42/puppet-tp_profile.svg?branch=master)](https://travis-ci.org/example42/puppet-tp_profile)
